@@ -1,0 +1,241 @@
+{
+  "entities": {
+    "StudyBatch": {
+      "title": "StudyBatch",
+      "description": "A shared course batch such as PARMAR 4.0 or SCIENCE MAGNET visible live to all students.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name of the batch (1-80 characters)."
+        },
+        "subtitle": {
+          "type": "string",
+          "description": "Short subtitle or faculty tagline (0-160 characters)."
+        },
+        "sortOrder": {
+          "type": "integer",
+          "description": "Display sort order (0-10000)."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Admin Firebase Auth UID who created this batch."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["name", "subtitle", "sortOrder", "createdBy", "createdAt", "updatedAt"]
+    },
+    "StudySubject": {
+      "title": "StudySubject",
+      "description": "A shared subject belonging to a study batch.",
+      "type": "object",
+      "properties": {
+        "batchId": {
+          "type": "string",
+          "description": "Parent StudyBatch document ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "Subject title (1-100 characters)."
+        },
+        "sortOrder": {
+          "type": "integer",
+          "description": "Display sort order (0-10000)."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Admin Firebase Auth UID who created this subject."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["batchId", "name", "sortOrder", "createdBy", "createdAt", "updatedAt"]
+    },
+    "StudyLecture": {
+      "title": "StudyLecture",
+      "description": "A shared study lecture containing optional video, English notes, Hindi notes, and PPT links.",
+      "type": "object",
+      "properties": {
+        "batchId": {
+          "type": "string",
+          "description": "Parent StudyBatch document ID."
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Parent StudySubject document ID."
+        },
+        "title": {
+          "type": "string",
+          "description": "Lecture title (1-150 characters)."
+        },
+        "videoUrl": {
+          "type": "string",
+          "description": "YouTube or video lecture URL (0-1000 characters)."
+        },
+        "engNotesUrl": {
+          "type": "string",
+          "description": "English notes PDF URL (0-1000 characters)."
+        },
+        "hinNotesUrl": {
+          "type": "string",
+          "description": "Hindi notes PDF URL (0-1000 characters)."
+        },
+        "pptUrl": {
+          "type": "string",
+          "description": "Class PPT or PDF URL (0-1000 characters)."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Admin Firebase Auth UID who created this lecture."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "batchId",
+        "subjectId",
+        "title",
+        "videoUrl",
+        "engNotesUrl",
+        "hinNotesUrl",
+        "pptUrl",
+        "createdBy",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PublicPreferences": {
+      "title": "PublicPreferences",
+      "description": "Shared community links (WhatsApp/Telegram) and catalog seed status visible to all students.",
+      "type": "object",
+      "properties": {
+        "whatsappUrl": {
+          "type": "string",
+          "description": "Configured WhatsApp link (0-500 characters)."
+        },
+        "telegramUrl": {
+          "type": "string",
+          "description": "Configured Telegram link (0-500 characters)."
+        },
+        "seededDefaults": {
+          "type": "boolean",
+          "description": "Whether default study batches have been seeded."
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Admin Firebase Auth UID who updated public settings."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["whatsappUrl", "telegramUrl", "seededDefaults", "updatedBy", "createdAt", "updatedAt"]
+    },
+    "AdminConfig": {
+      "title": "AdminConfig",
+      "description": "Admin-only configuration storing the SHA-256 hash of the admin passcode.",
+      "type": "object",
+      "properties": {
+        "adminPasscodeHash": {
+          "type": "string",
+          "description": "SHA-256 hash of the admin password (64-128 characters)."
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Admin Firebase Auth UID."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["adminPasscodeHash", "updatedBy", "createdAt", "updatedAt"]
+    },
+    "StudentProfile": {
+      "title": "StudentProfile",
+      "description": "Registered student profile saved directly in Firestore from Full Name and 10-digit Mobile Number.",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "description": "Student full name (2-80 characters)."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Student 10-digit mobile number."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["fullName", "phoneNumber", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/batches/{batchId}": {
+      "schema": { "$ref": "#/entities/StudyBatch" },
+      "description": "Shared live study batches readable by all students and managed by admins."
+    },
+    "/subjects/{subjectId}": {
+      "schema": { "$ref": "#/entities/StudySubject" },
+      "description": "Shared live subjects linked to batches."
+    },
+    "/lectures/{lectureId}": {
+      "schema": { "$ref": "#/entities/StudyLecture" },
+      "description": "Shared live lectures linked to batches and subjects."
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/PublicPreferences" },
+      "description": "Shared settings ('public' for WhatsApp/Telegram links, 'admin_config' for admin passcode hash)."
+    },
+    "/students/{studentId}": {
+      "schema": { "$ref": "#/entities/StudentProfile" },
+      "description": "Direct student profiles (write-only for student registration/name update, read/list restricted to admins)."
+    }
+  }
+}

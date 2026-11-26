@@ -1,0 +1,202 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Default-deny all reads and writes
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidBatch(data) {
+      return data.name is string &&
+             data.name.size() >= 1 &&
+             data.name.size() <= 80 &&
+             data.subtitle is string &&
+             data.subtitle.size() <= 160 &&
+             data.sortOrder is int &&
+             data.sortOrder >= 0 &&
+             data.sortOrder <= 10000 &&
+             data.createdBy is string &&
+             data.createdBy.size() >= 1 &&
+             data.createdBy.size() <= 128 &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function isValidSubject(data) {
+      return isValidId(data.batchId) &&
+             data.name is string &&
+             data.name.size() >= 1 &&
+             data.name.size() <= 100 &&
+             data.sortOrder is int &&
+             data.sortOrder >= 0 &&
+             data.sortOrder <= 10000 &&
+             data.createdBy is string &&
+             data.createdBy.size() >= 1 &&
+             data.createdBy.size() <= 128 &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function isValidLecture(data) {
+      return isValidId(data.batchId) &&
+             isValidId(data.subjectId) &&
+             data.title is string &&
+             data.title.size() >= 1 &&
+             data.title.size() <= 150 &&
+             data.videoUrl is string &&
+             data.videoUrl.size() <= 1000 &&
+             data.engNotesUrl is string &&
+             data.engNotesUrl.size() <= 1000 &&
+             data.hinNotesUrl is string &&
+             data.hinNotesUrl.size() <= 1000 &&
+             data.pptUrl is string &&
+             data.pptUrl.size() <= 1000 &&
+             data.createdBy is string &&
+             data.createdBy.size() >= 1 &&
+             data.createdBy.size() <= 128 &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function isValidPublicPreferences(data) {
+      return data.whatsappUrl is string &&
+             data.whatsappUrl.size() <= 500 &&
+             data.telegramUrl is string &&
+             data.telegramUrl.size() <= 500 &&
+             data.seededDefaults is bool &&
+             data.updatedBy is string &&
+             data.updatedBy.size() >= 1 &&
+             data.updatedBy.size() <= 128 &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    function isValidStudentProfile(data) {
+      return data.fullName is string &&
+             data.fullName.size() >= 2 &&
+             data.fullName.size() <= 80 &&
+             data.phoneNumber is string &&
+             data.phoneNumber.matches('^[0-9]{10}$') &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.updatedAt is timestamp &&
+             data.updatedAt <= request.time;
+    }
+
+    // Legacy admin docs locked down (admin login verifies locally without Firebase Auth)
+    match /admins/{adminUid} {
+      allow read, write: if false;
+    }
+
+    // Shared Live Course Catalog (non-PII): readable by all students, managed via Admin Dashboard
+    match /batches/{batchId} {
+      allow get: if isValidId(batchId);
+      allow list: if true;
+      allow create: if isValidId(batchId) &&
+                       incoming().keys().hasAll(['name', 'subtitle', 'sortOrder', 'createdBy', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['name', 'subtitle', 'sortOrder', 'createdBy', 'createdAt', 'updatedAt']) &&
+                       isValidBatch(incoming());
+      allow update: if isValidId(batchId) &&
+                       isValidBatch(incoming()) &&
+                       incoming().createdBy == existing().createdBy &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['name', 'subtitle', 'sortOrder', 'updatedAt']);
+      allow delete: if isValidId(batchId);
+    }
+
+    match /subjects/{subjectId} {
+      allow get: if isValidId(subjectId);
+      allow list: if true;
+      allow create: if isValidId(subjectId) &&
+                       incoming().keys().hasAll(['batchId', 'name', 'sortOrder', 'createdBy', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['batchId', 'name', 'sortOrder', 'createdBy', 'createdAt', 'updatedAt']) &&
+                       isValidSubject(incoming()) &&
+                       existsAfter(/databases/$(database)/documents/batches/$(incoming().batchId));
+      allow update: if isValidId(subjectId) &&
+                       isValidSubject(incoming()) &&
+                       incoming().createdBy == existing().createdBy &&
+                       incoming().batchId == existing().batchId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['name', 'sortOrder', 'updatedAt']);
+      allow delete: if isValidId(subjectId);
+    }
+
+    match /lectures/{lectureId} {
+      allow get: if isValidId(lectureId);
+      allow list: if true;
+      allow create: if isValidId(lectureId) &&
+                       incoming().keys().hasAll([
+                         'batchId', 'subjectId', 'title',
+                         'videoUrl', 'engNotesUrl', 'hinNotesUrl', 'pptUrl',
+                         'createdBy', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'batchId', 'subjectId', 'title',
+                         'videoUrl', 'engNotesUrl', 'hinNotesUrl', 'pptUrl',
+                         'createdBy', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidLecture(incoming()) &&
+                       existsAfter(/databases/$(database)/documents/batches/$(incoming().batchId)) &&
+                       existsAfter(/databases/$(database)/documents/subjects/$(incoming().subjectId));
+      allow update: if isValidId(lectureId) &&
+                       isValidLecture(incoming()) &&
+                       incoming().createdBy == existing().createdBy &&
+                       incoming().batchId == existing().batchId &&
+                       incoming().subjectId == existing().subjectId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['title', 'videoUrl', 'engNotesUrl', 'hinNotesUrl', 'pptUrl', 'updatedAt']);
+      allow delete: if isValidId(lectureId);
+    }
+
+    match /settings/{settingId} {
+      allow get: if settingId == 'public';
+      allow list: if false;
+
+      allow create: if settingId == 'public' &&
+                       incoming().keys().hasAll(['whatsappUrl', 'telegramUrl', 'seededDefaults', 'updatedBy', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['whatsappUrl', 'telegramUrl', 'seededDefaults', 'updatedBy', 'createdAt', 'updatedAt']) &&
+                       isValidPublicPreferences(incoming());
+
+      allow update: if settingId == 'public' &&
+                       isValidPublicPreferences(incoming()) &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['whatsappUrl', 'telegramUrl', 'seededDefaults', 'updatedBy', 'updatedAt']);
+
+      allow delete: if false;
+    }
+
+    // Student Profiles: direct registration creates profile; PII reads/list remain locked
+    match /students/{studentId} {
+      allow get, list, delete: if false;
+      allow create: if isValidId(studentId) &&
+                       incoming().keys().hasAll(['fullName', 'phoneNumber', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['fullName', 'phoneNumber', 'createdAt', 'updatedAt']) &&
+                       isValidStudentProfile(incoming());
+      allow update: if isValidId(studentId) &&
+                       isValidStudentProfile(incoming()) &&
+                       incoming().phoneNumber == existing().phoneNumber &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'updatedAt']);
+    }
+  }
+}

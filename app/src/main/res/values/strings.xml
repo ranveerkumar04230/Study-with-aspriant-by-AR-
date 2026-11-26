@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Study Aspirant</string>
+    <string name="saraswati_mantra">ॐ ऐं सरस्वत्यै नमः</string>
+    <string name="saraswati_image_desc">Respectful illustration of Goddess Saraswati</string>
+    <string name="brand_title_prefix">STUDY WITH</string>
+    <string name="brand_title_accent">ASPIRANT</string>
+    <string name="splash_quote">\"मेहनत इतनी खामोशी से करो कि सफलता शोर मचा दे!\"</string>
+    <string name="banner_quote">🔥 \"सपने वो नहीं जो नींद में आते हैं, सपने वो हैं जो सोने नहीं देते!\"</string>
+    <string name="search_hint">Search batch, subject or topic...</string>
+    <string name="footer_default">⚡ Study With Aspirant • Complete GK/GS &amp; Bihar Daroga</string>
+    <string name="student_login_title">Student Login</string>
+    <string name="student_login_subtitle">Enter your name &amp; mobile number to start studying</string>
+    <string name="start_studying">Start Studying</string>
+    <string name="sign_out">Sign out</string>
+    <string name="back_to_batches">← BACK TO BATCHES</string>
+    <string name="back_to_subjects">← BACK TO SUBJECTS</string>
+    <string name="admin_sheet_title">🛡️ Admin Dashboard • नया लेक्चर जोड़ें</string>
+    <string name="admin_save_lecture">लेक्चर सेव करें</string>
+    <string name="admin_social_title">🔗 WhatsApp &amp; Telegram लिंक</string>
+    <string name="admin_save_socials">लिंक्स सेव करें</string>
+    <string name="watch_video">WATCH VIDEO</string>
+    <string name="eng_notes">ENG NOTES</string>
+    <string name="hin_notes">HIN NOTES</string>
+    <string name="class_ppt">CLASS PPT</string>
+</resources>

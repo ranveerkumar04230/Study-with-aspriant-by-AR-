@@ -1,0 +1,6 @@
+{
+  "name": "Study Aspirant",
+  "description": "GK/GS, Science, and Bihar Daroga exam preparation app with batch lectures, bilingual notes, PPTs, and cloud sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
