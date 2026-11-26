@@ -17,24 +17,25 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Install dependencies and build web
+      - name: Find project and build APK
         run: |
+          PKG_DIR=$(dirname $(find . -name "package.json" -not -path "*/node_modules/*" | head -n 1))
+          echo "Found project at: $PKG_DIR"
+          cd "$PKG_DIR"
           npm install
           npm run build
-      - name: Setup Capacitor Android
-        run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap init "Study With Aspirant" "com.studywithaspirant.app" --web-dir=dist || true
           npx cap add android || true
           npx cap sync android
-      - name: Build Debug APK
-        run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
+          mkdir -p "$GITHUB_WORKSPACE/output"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/output/"
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Study-With-Aspirant-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: output/app-debug.apk
           
