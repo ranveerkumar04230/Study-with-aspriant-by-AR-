@@ -17,22 +17,45 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Prepare Web Files and Build APK
+      - name: Auto-detect Project and Build APK
         run: |
-          mkdir -p www
-          cp -r * www/ 2>/dev/null || true
-          rm -rf www/www www/.github www/.git
-          npm init -y
+          INDEX_FILE=$(find . -name "index.html" -not -path "*/node_modules/*" | head -n 1)
+          echo "Found index.html at: $INDEX_FILE"
+          PROJECT_DIR=$(dirname "$INDEX_FILE")
+          cd "$PROJECT_DIR"
+          
+          if [ -f "package.json" ]; then
+            npm install
+            npm run build || true
+          fi
+          
+          if [ -d "dist" ]; then
+            WEB_DIR="dist"
+          elif [ -d "build" ]; then
+            WEB_DIR="build"
+          else
+            mkdir -p www_app
+            cp -r * www_app/ 2>/dev/null || true
+            rm -rf www_app/www_app www_app/node_modules www_app/.git www_app/.github
+            WEB_DIR="www_app"
+          fi
+          
+          if [ ! -f "package.json" ]; then
+            npm init -y
+          fi
+          
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "Study With Aspirant" "com.studywithaspirant.app" --web-dir=www
+          npx cap init "Study With Aspirant" "com.studywithaspirant.app" --web-dir="$WEB_DIR" || true
           npx cap add android
           npx cap sync android
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
+          mkdir -p "$GITHUB_WORKSPACE/final_apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/final_apk/"
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Study-With-Aspirant-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: final_apk/app-debug.apk
           
